@@ -1,0 +1,39 @@
+# Backend (Go)
+/backend/bin/
+/backend/dist/
+backend.exe
+
+# Frontend (Flutter)
+/frontend/build/
+/frontend/.dart_tool/
+/frontend/pubspec.lock
+/frontend/.packages
+/frontend/windows/flutter/generated_plugins.cmake
+/frontend/windows/flutter/flutter_cppwrapper/CMakeLists.txt
+/frontend/web/flutter_service_worker.js
+/frontend/.flutter-plugins
+/frontend/.flutter-plugins-dependencies
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite

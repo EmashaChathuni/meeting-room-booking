@@ -1,0 +1,392 @@
+openapi: 3.0.3
+info:
+  title: Office Meeting Room Booking API
+  description: |
+    A simple REST API for managing office meeting room bookings.
+    
+    ## Authentication
+    All endpoints under `/api/` require an API key passed in the `X-API-Key` header.
+    
+    ## Status Values
+    Bookings can have the following status values:
+    - `pending` - Booking is requested but not yet confirmed
+    - `confirmed` - Booking is confirmed
+    - `cancelled` - Booking has been cancelled
+  version: 1.0.0
+  contact:
+    name: Office IT Team
+
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: Unique booking identifier
+        room_name:
+          type: string
+          example: "Conference Room A"
+          description: Name of the meeting room
+        booked_by:
+          type: string
+          example: "John Doe"
+          description: Full name of the person who made the booking
+        department:
+          type: string
+          example: "Engineering"
+          description: Department of the person
+        meeting_title:
+          type: string
+          example: "Q4 Planning Session"
+          description: Title or purpose of the meeting
+        meeting_date:
+          type: string
+          format: date
+          example: "2025-06-15"
+          description: Date of the meeting (YYYY-MM-DD)
+        start_time:
+          type: string
+          example: "09:00"
+          description: Meeting start time (HH:MM)
+        end_time:
+          type: string
+          example: "11:00"
+          description: Meeting end time (HH:MM)
+        number_of_people:
+          type: integer
+          example: 10
+          description: Number of attendees expected
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+          example: "pending"
+          description: Current status of the booking
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-05-19T08:30:00Z"
+          description: Timestamp when the booking was created
+
+    CreateBookingRequest:
+      type: object
+      required:
+        - room_name
+        - booked_by
+        - department
+        - meeting_title
+        - meeting_date
+        - start_time
+        - end_time
+        - number_of_people
+      properties:
+        room_name:
+          type: string
+          example: "Conference Room A"
+        booked_by:
+          type: string
+          example: "John Doe"
+        department:
+          type: string
+          example: "Engineering"
+        meeting_title:
+          type: string
+          example: "Q4 Planning Session"
+        meeting_date:
+          type: string
+          format: date
+          example: "2025-06-15"
+        start_time:
+          type: string
+          example: "09:00"
+        end_time:
+          type: string
+          example: "11:00"
+        number_of_people:
+          type: integer
+          minimum: 1
+          example: 10
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+          example: "pending"
+          description: Defaults to "pending" if not provided
+
+    UpdateBookingRequest:
+      type: object
+      properties:
+        room_name:
+          type: string
+          example: "Conference Room B"
+        booked_by:
+          type: string
+          example: "Jane Smith"
+        department:
+          type: string
+          example: "Marketing"
+        meeting_title:
+          type: string
+          example: "Product Launch Review"
+        meeting_date:
+          type: string
+          format: date
+          example: "2025-06-20"
+        start_time:
+          type: string
+          example: "14:00"
+        end_time:
+          type: string
+          example: "16:00"
+        number_of_people:
+          type: integer
+          minimum: 1
+          example: 5
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+          example: "confirmed"
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation successful"
+        data:
+          $ref: '#/components/schemas/Booking'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error description"
+        error:
+          type: string
+          example: "Detailed error message"
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check if the API server is running
+      security: []
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Server is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  message:
+                    type: string
+                    example: "Meeting Room Booking API is running"
+
+  /api/bookings:
+    get:
+      summary: Get All Bookings
+      description: Retrieve a list of all meeting room bookings, ordered by creation date (newest first)
+      tags:
+        - Bookings
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: List of bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Bookings fetched successfully"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Booking'
+        '401':
+          description: Missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create a New Booking
+      description: Add a new meeting room booking
+      tags:
+        - Bookings
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+            example:
+              room_name: "Conference Room A"
+              booked_by: "John Doe"
+              department: "Engineering"
+              meeting_title: "Sprint Planning"
+              meeting_date: "2025-06-15"
+              start_time: "09:00"
+              end_time: "10:00"
+              number_of_people: 8
+              status: "pending"
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid request body or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing API key
+        '403':
+          description: Invalid API key
+
+  /api/bookings/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The UUID of the booking
+        schema:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    get:
+      summary: Get a Single Booking
+      description: Retrieve details of a specific booking by its ID
+      tags:
+        - Bookings
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Booking found and returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing API key
+        '403':
+          description: Invalid API key
+
+    put:
+      summary: Update an Existing Booking
+      description: Update the details of a specific booking
+      tags:
+        - Bookings
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookingRequest'
+            example:
+              status: "confirmed"
+              room_name: "Conference Room B"
+      responses:
+        '200':
+          description: Booking updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid request body
+        '404':
+          description: Booking not found
+        '401':
+          description: Missing API key
+        '403':
+          description: Invalid API key
+
+    delete:
+      summary: Delete a Booking
+      description: Permanently remove a booking from the system
+      tags:
+        - Bookings
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Booking deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Booking deleted successfully"
+        '404':
+          description: Booking not found
+        '401':
+          description: Missing API key
+        '403':
+          description: Invalid API key
