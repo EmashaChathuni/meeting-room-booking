@@ -1,0 +1,14 @@
+build/
+.dart_tool/
+pubspec.lock
+.git
+.gitignore
+*.md
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+test/
+.github/

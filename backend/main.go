@@ -36,10 +36,10 @@ func main() {
 	// Register all API routes
 	routes.RegisterRoutes(router)
 
-	// Get port from environment variable (default: 8080)
+	// Get port from environment variable (default: 8081)
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8081"
 	}
 
 	log.Printf("🚀 Server running on http://localhost:%s", port)

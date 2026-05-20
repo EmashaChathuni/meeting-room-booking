@@ -6,6 +6,7 @@ import (
 
 	"meeting-room-booking/models"
 	"meeting-room-booking/repositories"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +23,17 @@ func GetAllBookings(c *gin.Context) {
 		return
 	}
 
-	bookings, err := repositories.GetAllBookings(userID.(string))
+	// Convert userID to int
+	userIntID, err := strconv.Atoi(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+		return
+	}
+
+	bookings, err := repositories.GetAllBookings(userIntID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -41,7 +52,15 @@ func GetAllBookings(c *gin.Context) {
 
 // GetBookingByID handles GET /api/bookings/:id - requires authentication
 func GetBookingByID(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid booking ID",
+		})
+		return
+	}
 
 	// Get user_id from context
 	userID, exists := c.Get("user_id")
@@ -53,7 +72,17 @@ func GetBookingByID(c *gin.Context) {
 		return
 	}
 
-	booking, err := repositories.GetBookingByID(id, userID.(string))
+	// Convert userID to int
+	userIntID, err := strconv.Atoi(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+		return
+	}
+
+	booking, err := repositories.GetBookingByID(id, userIntID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -102,7 +131,17 @@ func CreateBooking(c *gin.Context) {
 		return
 	}
 
-	booking, err := repositories.CreateBooking(userID.(string), req)
+	// Convert userID to int
+	userIntID, err := strconv.Atoi(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+		return
+	}
+
+	booking, err := repositories.CreateBooking(userIntID, req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -121,7 +160,15 @@ func CreateBooking(c *gin.Context) {
 
 // UpdateBooking handles PUT /api/bookings/:id - requires authentication
 func UpdateBooking(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid booking ID",
+		})
+		return
+	}
 
 	var req models.UpdateBookingRequest
 
@@ -145,7 +192,17 @@ func UpdateBooking(c *gin.Context) {
 		return
 	}
 
-	booking, err := repositories.UpdateBooking(id, userID.(string), req)
+	// Convert userID to int
+	userIntID, err := strconv.Atoi(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+		return
+	}
+
+	booking, err := repositories.UpdateBooking(id, userIntID, req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -172,7 +229,15 @@ func UpdateBooking(c *gin.Context) {
 
 // DeleteBooking handles DELETE /api/bookings/:id - requires authentication
 func DeleteBooking(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid booking ID",
+		})
+		return
+	}
 
 	// Get user_id from context
 	userID, exists := c.Get("user_id")
@@ -184,7 +249,17 @@ func DeleteBooking(c *gin.Context) {
 		return
 	}
 
-	deleted, err := repositories.DeleteBooking(id, userID.(string))
+	// Convert userID to int
+	userIntID, err := strconv.Atoi(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+		return
+	}
+
+	deleted, err := repositories.DeleteBooking(id, userIntID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,

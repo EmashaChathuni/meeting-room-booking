@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/booking_model.dart';
 import '../services/booking_api_service.dart';
+import '../services/auth_service.dart';
 
 class EditBookingScreen extends StatefulWidget {
   final Booking booking; // The booking to edit
@@ -43,7 +44,7 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill all controllers with existing booking data
+    // Initialize controllers with existing booking data
     _roomNameController = TextEditingController(text: widget.booking.roomName);
     _bookedByController = TextEditingController(text: widget.booking.bookedBy);
     _departmentController = TextEditingController(text: widget.booking.department);
@@ -59,18 +60,39 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
     // Parse existing start and end times
     _selectedStartTime = _parseTime(widget.booking.startTime);
     _selectedEndTime = _parseTime(widget.booking.endTime);
+    
+    // Load current user data to auto-fill name and department
+    _loadUserData();
   }
 
-  // Convert "HH:MM" string to TimeOfDay
-  TimeOfDay _parseTime(String timeStr) {
-    final parts = timeStr.split(':');
-    if (parts.length >= 2) {
-      return TimeOfDay(
-        hour: int.tryParse(parts[0]) ?? 9,
-        minute: int.tryParse(parts[1]) ?? 0,
-      );
+  // Load logged-in user data and auto-fill form fields
+  Future<void> _loadUserData() async {
+    try {
+      final user = await AuthService.getUser();
+      if (user != null && mounted) {
+        setState(() {
+          _bookedByController.text = user['full_name'] ?? '';
+          _departmentController.text = user['department'] ?? '';
+        });
+      }
+    } catch (e) {
+      // Silently handle error
     }
-    return const TimeOfDay(hour: 9, minute: 0);
+  }
+
+  // Convert "HH:MM:SS" or "HH:MM" string to TimeOfDay
+  TimeOfDay _parseTime(String timeStr) {
+    try {
+      final time = DateFormat.Hms().parse(timeStr);
+      return TimeOfDay.fromDateTime(time);
+    } catch (e) {
+      try {
+        final time = DateFormat.Hm().parse(timeStr);
+        return TimeOfDay.fromDateTime(time);
+      } catch (e) {
+        return const TimeOfDay(hour: 9, minute: 0);
+      }
+    }
   }
 
   @override

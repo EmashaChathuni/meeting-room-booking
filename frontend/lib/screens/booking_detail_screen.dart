@@ -2,6 +2,7 @@
 // Shows full details of a single booking with Edit and Delete options
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/booking_model.dart';
 import '../services/booking_api_service.dart';
 import 'edit_booking_screen.dart';
@@ -237,19 +238,36 @@ class BookingDetailScreen extends StatelessWidget {
   // Calculate duration between start and end times
   String _calculateDuration(String start, String end) {
     try {
-      final startParts = start.split(':');
-      final endParts = end.split(':');
-      final startMinutes = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
-      final endMinutes = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
-      final diff = endMinutes - startMinutes;
-      if (diff <= 0) return 'N/A';
-      final hours = diff ~/ 60;
-      final mins = diff % 60;
+      final startTime = DateFormat.Hms().parse(start);
+      final endTime = DateFormat.Hms().parse(end);
+      final diff = endTime.difference(startTime);
+
+      if (diff.isNegative || diff.inMinutes == 0) return 'N/A';
+
+      final hours = diff.inHours;
+      final mins = diff.inMinutes % 60;
+
       if (hours == 0) return '$mins minutes';
       if (mins == 0) return '$hours hour(s)';
       return '$hours hour(s) $mins minutes';
     } catch (_) {
-      return 'N/A';
+      // Fallback for HH:mm format
+      try {
+        final startTime = DateFormat.Hm().parse(start);
+        final endTime = DateFormat.Hm().parse(end);
+        final diff = endTime.difference(startTime);
+
+        if (diff.isNegative || diff.inMinutes == 0) return 'N/A';
+
+        final hours = diff.inHours;
+        final mins = diff.inMinutes % 60;
+
+        if (hours == 0) return '$mins minutes';
+        if (mins == 0) return '$hours hour(s)';
+        return '$hours hour(s) $mins minutes';
+      } catch (e) {
+        return 'N/A';
+      }
     }
   }
 }

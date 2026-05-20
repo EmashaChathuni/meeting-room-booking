@@ -1,0 +1,61 @@
+name: Deploy to Choreo
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+    
+    - name: Build Backend
+      run: |
+        cd backend
+        go build -o main .
+    
+    - name: Run Tests
+      run: |
+        cd backend
+        go test ./...
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.0.0'
+    
+    - name: Install Dependencies
+      run: |
+        cd frontend
+        flutter pub get
+    
+    - name: Build Web
+      run: |
+        cd frontend
+        flutter build web --release
+
+  deploy:
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Choreo
+      run: |
+        echo "📦 Deployment to Choreo initiated"
+        echo "Please use Choreo Console for final deployment"
+        echo "Repository is ready for Choreo to build and deploy"
