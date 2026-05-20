@@ -2,49 +2,12 @@
 package routes
 
 import (
-	"meeting-room-booking/controllers"
 	"net/http"
-	"os"
+
+	"meeting-room-booking/controllers"
 
 	"github.com/gin-gonic/gin"
 )
-
-// APIKeyMiddleware checks for a valid API key in the request header
-func APIKeyMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Get the expected API key from environment variable
-		expectedKey := os.Getenv("API_KEY")
-		if expectedKey == "" {
-			// If no API key is configured, skip authentication
-			c.Next()
-			return
-		}
-
-		// Read the API key from the request header
-		providedKey := c.GetHeader("X-API-Key")
-
-		if providedKey == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"success": false,
-				"message": "Missing API key. Please provide X-API-Key header",
-			})
-			c.Abort() // Stop processing the request
-			return
-		}
-
-		if providedKey != expectedKey {
-			c.JSON(http.StatusForbidden, gin.H{
-				"success": false,
-				"message": "Invalid API key",
-			})
-			c.Abort()
-			return
-		}
-
-		// API key is valid, continue to the next handler
-		c.Next()
-	}
-}
 
 // RegisterRoutes sets up all API routes on the given Gin router
 func RegisterRoutes(router *gin.Engine) {
@@ -61,15 +24,28 @@ func RegisterRoutes(router *gin.Engine) {
 	// Serve swagger.yaml at /swagger-spec for the Swagger UI to reference
 	router.StaticFile("/swagger-spec", "./docs/swagger.yaml")
 
-	// API routes group with authentication middleware
+	// API routes group
 	api := router.Group("/api")
-	api.Use(APIKeyMiddleware())
 	{
-		// Booking CRUD endpoints
-		api.GET("/bookings", controllers.GetAllBookings)       // Get all bookings
-		api.GET("/bookings/:id", controllers.GetBookingByID)   // Get one booking
-		api.POST("/bookings", controllers.CreateBooking)       // Create a booking
-		api.PUT("/bookings/:id", controllers.UpdateBooking)    // Update a booking
-		api.DELETE("/bookings/:id", controllers.DeleteBooking) // Delete a booking
+		// Auth routes (no authentication required)
+		auth := api.Group("/auth")
+		{
+			auth.POST("/signup", controllers.Signup)
+			auth.POST("/login", controllers.Login)
+		}
+
+		// User profile route (requires authentication)
+		api.GET("/profile", AuthMiddleware(), controllers.GetProfile)
+
+		// Booking routes (all require authentication)
+		bookings := api.Group("/bookings")
+		bookings.Use(AuthMiddleware())
+		{
+			bookings.GET("", controllers.GetAllBookings)       // Get all bookings for authenticated user
+			bookings.GET("/:id", controllers.GetBookingByID)   // Get one booking
+			bookings.POST("", controllers.CreateBooking)       // Create a booking
+			bookings.PUT("/:id", controllers.UpdateBooking)    // Update a booking
+			bookings.DELETE("/:id", controllers.DeleteBooking) // Delete a booking
+		}
 	}
 }

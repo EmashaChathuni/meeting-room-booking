@@ -1,8 +1,12 @@
 // lib/main.dart
-// App entry point - configures theme and initial route
+// App entry point - configures theme, routing, and initial route
 
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/signup_screen.dart';
+import 'screens/booking_list_screen.dart';
+import 'screens/profile_screen.dart';
 
 void main() {
   runApp(const MeetingRoomBookingApp());
@@ -87,8 +91,15 @@ class MeetingRoomBookingApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF5F7FA),
       ),
 
-      // ── Start with the Splash Screen ──
+      // ── Routing ────────────────────────────────────────
+      // Start with splash screen to check authentication status
       home: const SplashScreen(),
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignupScreen(),
+        '/bookings': (context) => const BookingListScreen(),
+        '/profile': (context) => const ProfileScreen(),
+      },
     );
   }
 }

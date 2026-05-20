@@ -3,7 +3,8 @@
 
 class Booking {
   // All the fields matching our database table
-  final String id;
+  final int id;               // Auto-increment integer ID
+  final int userId;           // Foreign key to users table
   final String roomName;
   final String bookedBy;
   final String department;
@@ -18,6 +19,7 @@ class Booking {
   // Constructor
   Booking({
     required this.id,
+    required this.userId,
     required this.roomName,
     required this.bookedBy,
     required this.department,
@@ -33,7 +35,8 @@ class Booking {
   // Create a Booking object from a JSON map (from API response)
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
-      id: json['id'] ?? '',
+      id: json['id'] as int? ?? 0,
+      userId: json['user_id'] as int? ?? 0,
       roomName: json['room_name'] ?? '',
       bookedBy: json['booked_by'] ?? '',
       department: json['department'] ?? '',

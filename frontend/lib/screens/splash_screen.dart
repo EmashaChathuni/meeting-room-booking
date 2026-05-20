@@ -1,8 +1,8 @@
 // lib/screens/splash_screen.dart
-// The first screen shown when the app launches
+// The first screen shown when the app launches - checks authentication status
 
 import 'package:flutter/material.dart';
-import 'booking_list_screen.dart';
+import '../services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -39,14 +39,29 @@ class _SplashScreenState extends State<SplashScreen>
     // Start the animation
     _controller.forward();
 
-    // Navigate to the booking list screen after 2.5 seconds
-    Future.delayed(const Duration(milliseconds: 2500), () {
+    // Check authentication status and navigate accordingly
+    _checkAuthenticationStatus();
+  }
+
+  // Check if user is logged in and navigate to appropriate screen
+  Future<void> _checkAuthenticationStatus() async {
+    // Wait for animation to complete (or at least 2.5 seconds for UX)
+    await Future.delayed(const Duration(milliseconds: 2500));
+
+    if (mounted) {
+      // Check if user has a stored token
+      final isLoggedIn = await AuthService.isLoggedIn();
+
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const BookingListScreen()),
-        );
+        if (isLoggedIn) {
+          // User is logged in - go to bookings list
+          Navigator.of(context).pushReplacementNamed('/bookings');
+        } else {
+          // User is not logged in - go to login screen
+          Navigator.of(context).pushReplacementNamed('/login');
+        }
       }
-    });
+    }
   }
 
   @override
@@ -78,113 +93,52 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                   child: const Icon(
                     Icons.meeting_room,
-                    size: 56,
                     color: Colors.white,
+                    size: 56,
                   ),
                 ),
 
                 const SizedBox(height: 24),
 
-                // App name
+                // App title
                 const Text(
-                  'Meeting Room',
+                  'Meeting Room Booking',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-                const Text(
-                  'Booking App',
-                  style: TextStyle(
-                    color: Color(0xFF90CAF9),
                     fontSize: 20,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 2.0,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
 
                 // Subtitle
                 const Text(
-                  'Office Room Management',
+                  'Book your workspace',
                   style: TextStyle(
-                    color: Color(0xFF9FA8DA),
-                    fontSize: 13,
+                    color: Colors.white70,
+                    fontSize: 14,
                   ),
                 ),
 
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
 
-                // Loading dots indicator
-                const _LoadingDots(),
+                // Loading indicator
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.white.withOpacity(0.8),
+                    ),
+                    strokeWidth: 3,
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-// ─── Animated Loading Dots ────────────────────────────────
-class _LoadingDots extends StatefulWidget {
-  const _LoadingDots();
-
-  @override
-  State<_LoadingDots> createState() => _LoadingDotsState();
-}
-
-class _LoadingDotsState extends State<_LoadingDots>
-    with TickerProviderStateMixin {
-  late List<AnimationController> _controllers;
-
-  @override
-  void initState() {
-    super.initState();
-    _controllers = List.generate(3, (i) {
-      final ctrl = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 500),
-      );
-      // Stagger each dot's animation
-      Future.delayed(Duration(milliseconds: i * 200), () {
-        if (mounted) ctrl.repeat(reverse: true);
-      });
-      return ctrl;
-    });
-  }
-
-  @override
-  void dispose() {
-    for (final ctrl in _controllers) {
-      ctrl.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(3, (i) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: FadeTransition(
-            opacity: _controllers[i],
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Color(0xFF90CAF9),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        );
-      }),
     );
   }
 }

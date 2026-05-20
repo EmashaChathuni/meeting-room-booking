@@ -2,16 +2,27 @@
 package controllers
 
 import (
-	"meeting-room-booking/models"
-	"meeting-room-booking/services"
 	"net/http"
+
+	"meeting-room-booking/models"
+	"meeting-room-booking/repositories"
 
 	"github.com/gin-gonic/gin"
 )
 
-// GetAllBookings handles GET /api/bookings
+// GetAllBookings handles GET /api/bookings - requires authentication
 func GetAllBookings(c *gin.Context) {
-	bookings, err := services.GetAllBookings()
+	// Get user_id from context (set by auth middleware)
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	bookings, err := repositories.GetAllBookings(userID.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -28,23 +39,34 @@ func GetAllBookings(c *gin.Context) {
 	})
 }
 
-// GetBookingByID handles GET /api/bookings/:id
+// GetBookingByID handles GET /api/bookings/:id - requires authentication
 func GetBookingByID(c *gin.Context) {
 	id := c.Param("id")
 
-	booking, err := services.GetBookingByID(id)
+	// Get user_id from context
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	booking, err := repositories.GetBookingByID(id, userID.(string))
 	if err != nil {
-		if err.Error() == "booking not found" {
-			c.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"message": "Booking not found",
-			})
-			return
-		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Failed to fetch booking",
 			"error":   err.Error(),
+		})
+		return
+	}
+
+	if booking == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "Booking not found",
 		})
 		return
 	}
@@ -56,7 +78,7 @@ func GetBookingByID(c *gin.Context) {
 	})
 }
 
-// CreateBooking handles POST /api/bookings
+// CreateBooking handles POST /api/bookings - requires authentication
 func CreateBooking(c *gin.Context) {
 	var req models.CreateBookingRequest
 
@@ -70,7 +92,17 @@ func CreateBooking(c *gin.Context) {
 		return
 	}
 
-	booking, err := services.CreateBooking(req)
+	// Get user_id from context
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	booking, err := repositories.CreateBooking(userID.(string), req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -87,7 +119,7 @@ func CreateBooking(c *gin.Context) {
 	})
 }
 
-// UpdateBooking handles PUT /api/bookings/:id
+// UpdateBooking handles PUT /api/bookings/:id - requires authentication
 func UpdateBooking(c *gin.Context) {
 	id := c.Param("id")
 
@@ -103,19 +135,30 @@ func UpdateBooking(c *gin.Context) {
 		return
 	}
 
-	booking, err := services.UpdateBooking(id, req)
+	// Get user_id from context
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	booking, err := repositories.UpdateBooking(id, userID.(string), req)
 	if err != nil {
-		if err.Error() == "booking not found" {
-			c.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"message": "Booking not found",
-			})
-			return
-		}
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Failed to update booking",
 			"error":   err.Error(),
+		})
+		return
+	}
+
+	if booking == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "Booking not found",
 		})
 		return
 	}
@@ -127,23 +170,34 @@ func UpdateBooking(c *gin.Context) {
 	})
 }
 
-// DeleteBooking handles DELETE /api/bookings/:id
+// DeleteBooking handles DELETE /api/bookings/:id - requires authentication
 func DeleteBooking(c *gin.Context) {
 	id := c.Param("id")
 
-	err := services.DeleteBooking(id)
+	// Get user_id from context
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	deleted, err := repositories.DeleteBooking(id, userID.(string))
 	if err != nil {
-		if err.Error() == "booking not found" {
-			c.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"message": "Booking not found",
-			})
-			return
-		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Failed to delete booking",
 			"error":   err.Error(),
+		})
+		return
+	}
+
+	if !deleted {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "Booking not found",
 		})
 		return
 	}

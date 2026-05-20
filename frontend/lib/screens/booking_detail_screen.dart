@@ -181,7 +181,7 @@ class BookingDetailScreen extends StatelessWidget {
               children: [
                 _DetailRow(
                   label: 'Booking ID',
-                  value: booking.id,
+                  value: booking.id.toString(),
                   isSmall: true,
                 ),
                 _DetailRow(

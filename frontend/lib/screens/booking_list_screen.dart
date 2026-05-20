@@ -94,6 +94,14 @@ class _BookingListScreenState extends State<BookingListScreen> {
             tooltip: 'Refresh',
             onPressed: _fetchBookings,
           ),
+          // Profile button in app bar
+          IconButton(
+            icon: const Icon(Icons.person),
+            tooltip: 'Profile',
+            onPressed: () {
+              Navigator.of(context).pushNamed('/profile');
+            },
+          ),
         ],
       ),
       body: _buildBody(),

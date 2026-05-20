@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/booking_api_service.dart';
+import '../services/auth_service.dart';
 
 class AddBookingScreen extends StatefulWidget {
   const AddBookingScreen({super.key});
@@ -41,6 +42,27 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
     'Meeting Room 2',
     'Training Room',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  // Load logged-in user data to pre-fill form
+  Future<void> _loadUserData() async {
+    try {
+      final user = await AuthService.getUser();
+      if (user != null && mounted) {
+        setState(() {
+          _bookedByController.text = user['full_name'] ?? '';
+          _departmentController.text = user['department'] ?? '';
+        });
+      }
+    } catch (e) {
+      // Silently handle error
+    }
+  }
 
   @override
   void dispose() {
