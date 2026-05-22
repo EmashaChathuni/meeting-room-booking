@@ -142,9 +142,9 @@ func UpdateBooking(id, userID int, req models.UpdateBookingRequest) (*models.Boo
 		    booked_by = COALESCE(NULLIF($2, ''), booked_by),
 		    department = COALESCE(NULLIF($3, ''), department),
 		    meeting_title = COALESCE(NULLIF($4, ''), meeting_title),
-		    meeting_date = COALESCE(NULLIF($5, ''), meeting_date),
-		    start_time = COALESCE(NULLIF($6, ''), start_time),
-		    end_time = COALESCE(NULLIF($7, ''), end_time),
+		    meeting_date = CASE WHEN $5::text != '' THEN $5::timestamp ELSE meeting_date END,
+		    start_time = CASE WHEN $6::text != '' THEN $6::time ELSE start_time END,
+		    end_time = CASE WHEN $7::text != '' THEN $7::time ELSE end_time END,
 		    number_of_people = COALESCE(NULLIF($8, 0), number_of_people),
 		    status = COALESCE(NULLIF($9, ''), status),
 		    updated_at = NOW()
