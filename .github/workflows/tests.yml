@@ -1,0 +1,58 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      
+      - name: Cache go mod
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      
+      - name: Download dependencies
+        working-directory: ./backend
+        run: go mod tidy
+      
+      - name: Run tests
+        working-directory: ./backend
+        run: go test -v -coverprofile=coverage.out ./...
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./backend/coverage.out
+          flags: backend
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+      
+      - name: Get Flutter dependencies
+        working-directory: ./frontend
+        run: flutter pub get
+      
+      - name: Run Flutter tests
+        working-directory: ./frontend
+        run: flutter test

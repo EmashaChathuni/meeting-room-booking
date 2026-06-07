@@ -6,7 +6,7 @@ class Booking {
   final int id;               // Auto-increment integer ID
   final int userId;           // Foreign key to users table
   final String roomName;
-  final String bookedBy;
+  final String? bookedBy;     // Nullable - can be null from database
   final String department;
   final String meetingTitle;
   final String meetingDate;   // Format: YYYY-MM-DD
@@ -21,7 +21,7 @@ class Booking {
     required this.id,
     required this.userId,
     required this.roomName,
-    required this.bookedBy,
+    this.bookedBy,              // Now optional
     required this.department,
     required this.meetingTitle,
     required this.meetingDate,

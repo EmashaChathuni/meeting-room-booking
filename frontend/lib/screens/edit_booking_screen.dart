@@ -46,7 +46,7 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
     super.initState();
     // Initialize controllers with existing booking data
     _roomNameController = TextEditingController(text: widget.booking.roomName);
-    _bookedByController = TextEditingController(text: widget.booking.bookedBy);
+    _bookedByController = TextEditingController(text: widget.booking.bookedBy ?? '');
     _departmentController = TextEditingController(text: widget.booking.department);
     _meetingTitleController = TextEditingController(text: widget.booking.meetingTitle);
     _numberOfPeopleController = TextEditingController(

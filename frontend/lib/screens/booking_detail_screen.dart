@@ -147,7 +147,7 @@ class BookingDetailScreen extends StatelessWidget {
               title: 'Attendee Information',
               icon: Icons.person_outline,
               children: [
-                _DetailRow(label: 'Booked By', value: booking.bookedBy),
+                _DetailRow(label: 'Booked By', value: booking.bookedBy ?? 'Not specified'),
                 _DetailRow(label: 'Department', value: booking.department),
                 _DetailRow(
                   label: 'Number of People',

@@ -101,7 +101,9 @@ class BookingCard extends StatelessWidget {
                   const Icon(Icons.person_outline, size: 14, color: Color(0xFF757575)),
                   const SizedBox(width: 4),
                   Text(
-                    '${booking.bookedBy} · ${booking.department}',
+                    booking.bookedBy != null 
+                      ? '${booking.bookedBy} · ${booking.department}'
+                      : booking.department,
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF757575),

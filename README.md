@@ -54,9 +54,6 @@ meeting-room-booking/
 │       │   └── booking_detail_screen.dart
 │       └── widgets/
 │           └── booking_card.dart
-│
-└── database/
-    └── setup.sql               ← Database setup script
 ```
 
 ---
@@ -65,9 +62,7 @@ meeting-room-booking/
 
 1. Go to [supabase.com](https://supabase.com) and create a free account
 2. Create a new project
-3. Go to **SQL Editor** in the left sidebar
-4. Copy and paste the contents of `database/setup.sql` and run it
-5. Your `meeting_bookings` table is now ready!
+3. Supabase automatically sets up your PostgreSQL database. Your `meeting_bookings` and `users` tables will be accessible through the connection.
 
 ### Get your connection string:
 - Go to: **Project Settings** → **Database** → **Connection string** tab → **URI**

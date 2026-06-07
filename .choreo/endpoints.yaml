@@ -1,0 +1,28 @@
+endpoints:
+  - name: API
+    description: Backend REST API
+    basePath: /api
+    host: backend-api
+    port: 8080
+    scheme: http
+    paths:
+      - path: /auth
+        methods:
+          - POST
+      - path: /bookings
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+      - path: /users
+        methods:
+          - GET
+          - PUT
+
+  - name: Web UI
+    description: Flutter Web Application
+    basePath: /
+    host: frontend-web
+    port: 80
+    scheme: http
