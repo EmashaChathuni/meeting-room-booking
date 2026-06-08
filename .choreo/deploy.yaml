@@ -14,17 +14,14 @@ services:
     port: 8080
     environment:
       - name: SUPABASE_DB_URL
-        valueFrom:
-          secretKeyRef:
-            name: supabase-credentials
-            key: db-url
+        value: "postgresql://postgres:Emasha%401130@db.ktfktivucihcyozvnfqo.supabase.co:5432/postgres?sslmode=require" 
       - name: JWT_SECRET
         value: "meeting-room-booking-jwt-secret-2024"
       - name: API_KEY
         value: "my-secret-api-key"
       - name: PORT
         value: "8080"
-    endpoints:
+    endpoints: 
       - name: api
         basePath: /
         port: 8080

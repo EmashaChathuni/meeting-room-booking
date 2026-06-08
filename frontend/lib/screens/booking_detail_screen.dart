@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/booking_model.dart';
 import '../services/booking_api_service.dart';
+import '../services/auth_service.dart';
 import 'edit_booking_screen.dart';
 
 class BookingDetailScreen extends StatefulWidget {
@@ -168,11 +169,11 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               title: 'Attendee Information',
               icon: Icons.person_outline,
               children: [
-                _DetailRow(label: 'Booked By', value: booking.bookedBy ?? 'Not specified'),
-                _DetailRow(label: 'Department', value: booking.department),
+                _DetailRow(label: 'Booked By', value: widget.booking.bookedBy ?? 'Not specified'),
+                _DetailRow(label: 'Department', value: widget.booking.department),
                 _DetailRow(
                   label: 'Number of People',
-                  value: '${booking.numberOfPeople} person(s)',
+                  value: '${widget.booking.numberOfPeople} person(s)',
                 ),
               ],
             ),
