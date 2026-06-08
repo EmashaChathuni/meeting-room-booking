@@ -19,12 +19,13 @@ func main() {
 		log.Println("No .env file found, reading from system environment")
 	}
 
-	// Connect to the database
-	config.ConnectDB()
-	defer config.DB.Close()
-
 	// Create a new Gin router
 	router := gin.Default()
+
+	// 🏥 Health check route (Always works even if DB is slow)
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "OK", "message": "Backend is alive!"})
+	})
 
 	// Allow CORS so Flutter app can talk to the API
 	router.Use(cors.New(cors.Config{
@@ -32,6 +33,12 @@ func main() {
 		AllowMethods:    []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:    []string{"Origin", "Content-Type", "X-API-Key", "Authorization"},
 	}))
+
+	// Connect to the database with logging
+	log.Println("⌛ Connecting to Supabase...")
+	config.ConnectDB()
+	log.Println("✅ Database connected successfully")
+	defer config.DB.Close()
 
 	// Register all API routes
 	routes.RegisterRoutes(router)

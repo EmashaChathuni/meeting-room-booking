@@ -10,8 +10,7 @@ services:
     source:
       type: github
       path: ./backend
-    language: go
-    buildpack: go
+    dockerfile: Dockerfile
     port: 8080
     environment:
       - name: SUPABASE_DB_URL
