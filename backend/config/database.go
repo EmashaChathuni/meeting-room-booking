@@ -17,7 +17,7 @@ func ConnectDB() {
 	// Get the database URL from environment variable
 	dbURL := os.Getenv("SUPABASE_DB_URL")
 	if dbURL == "" {
-		log.Println("⚠️ SUPABASE_DB_URL environment variable is not set")
+		log.Println("SUPABASE_DB_URL environment variable is not set")
 		return
 	}
 
@@ -25,7 +25,7 @@ func ConnectDB() {
 	var err error
 	DB, err = sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Printf("❌ Error opening database connection pool: %v", err)
+		log.Printf("Error opening database connection pool: %v", err)
 		return
 	}
 
