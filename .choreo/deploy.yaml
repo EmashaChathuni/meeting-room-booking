@@ -19,6 +19,10 @@ services:
           secretKeyRef:
             name: supabase-credentials
             key: db-url
+      - name: JWT_SECRET
+        value: "meeting-room-booking-jwt-secret-2024"
+      - name: API_KEY
+        value: "my-secret-api-key"
       - name: PORT
         value: "8080"
     endpoints:
