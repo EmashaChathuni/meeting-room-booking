@@ -17,24 +17,26 @@ func ConnectDB() {
 	// Get the database URL from environment variable
 	dbURL := os.Getenv("SUPABASE_DB_URL")
 	if dbURL == "" {
-		log.Fatal("SUPABASE_DB_URL environment variable is not set")
+		log.Println("⚠️ SUPABASE_DB_URL environment variable is not set")
+		return
 	}
 
 	// Open a connection to the database
 	var err error
 	DB, err = sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatalf("❌ Error opening database connection pool: %v", err)
+		log.Printf("❌ Error opening database connection pool: %v", err)
+		return
 	}
 
-	// Set connection limits (Good for Choreo/Cloud environments)
+	// Set connection limits
 	DB.SetMaxOpenConns(15)
 	DB.SetMaxIdleConns(5)
 
-	// Verify the connection is alive
+	// Verify the connection is alive (Non-fatal)
 	if err = DB.Ping(); err != nil {
-		log.Fatalf("❌ Could not reach Supabase. Check your password and IP Whitelist (0.0.0.0/0). Error: %v", err)
+		log.Printf("⚠️ Could not reach Supabase yet. Error: %v", err)
+	} else {
+		log.Println("✅ Successfully connected to Supabase!")
 	}
-
-	log.Println("✅ Successfully connected to Supabase!")
 }
