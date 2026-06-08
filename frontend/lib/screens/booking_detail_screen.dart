@@ -7,13 +7,39 @@ import '../models/booking_model.dart';
 import '../services/booking_api_service.dart';
 import 'edit_booking_screen.dart';
 
-class BookingDetailScreen extends StatelessWidget {
+class BookingDetailScreen extends StatefulWidget {
   final Booking booking;
 
   const BookingDetailScreen({super.key, required this.booking});
 
+  @override
+  State<BookingDetailScreen> createState() => _BookingDetailScreenState();
+}
+
+class _BookingDetailScreenState extends State<BookingDetailScreen> {
+  int? _currentUserId;
+  bool _isOwner = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkOwnership();
+  }
+
+  Future<void> _checkOwnership() async {
+    final id = await AuthService.getCurrentUserId();
+    if (mounted) {
+      setState(() {
+        _currentUserId = id;
+        _isOwner = widget.booking.userId == id;
+      });
+    }
+  }
+
   // Show confirmation dialog before deleting
   Future<void> _confirmDelete(BuildContext context) async {
+    if (!_isOwner) return; // Extra safety check
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -53,7 +79,7 @@ class BookingDetailScreen extends StatelessWidget {
   // Call the API to delete and show result
   Future<void> _deleteBooking(BuildContext context) async {
     try {
-      await BookingApiService.deleteBooking(booking.id);
+      await BookingApiService.deleteBooking(widget.booking.id);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -62,7 +88,6 @@ class BookingDetailScreen extends StatelessWidget {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        // Return true so the list screen refreshes
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -80,14 +105,15 @@ class BookingDetailScreen extends StatelessWidget {
 
   // Navigate to Edit screen
   void _goToEdit(BuildContext context) async {
+    if (!_isOwner) return; // Extra safety check
+
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => EditBookingScreen(booking: booking),
+        builder: (_) => EditBookingScreen(booking: widget.booking),
       ),
     );
     if (result == true && context.mounted) {
-      // Return true to list screen to trigger a refresh
       Navigator.pop(context, true);
     }
   }
@@ -104,41 +130,36 @@ class BookingDetailScreen extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         elevation: 0,
-        actions: [
-          // Edit button
+        actions: _isOwner ? [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: 'Edit Booking',
             onPressed: () => _goToEdit(context),
           ),
-          // Delete button
           IconButton(
             icon: const Icon(Icons.delete_outline),
             tooltip: 'Delete Booking',
             onPressed: () => _confirmDelete(context),
           ),
-        ],
+        ] : null,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header Card: Room + Status ──
-            _HeaderCard(booking: booking),
-
+            _HeaderCard(booking: widget.booking),
             const SizedBox(height: 16),
-
-            // ── Meeting Info ──
             _DetailCard(
               title: 'Meeting Information',
               icon: Icons.info_outline,
               children: [
-                _DetailRow(label: 'Meeting Title', value: booking.meetingTitle),
-                _DetailRow(label: 'Room', value: booking.roomName),
-                _DetailRow(label: 'Status', value: booking.status.toUpperCase()),
+                _DetailRow(label: 'Meeting Title', value: widget.booking.meetingTitle),
+                _DetailRow(label: 'Room', value: widget.booking.roomName),
+                _DetailRow(label: 'Status', value: widget.booking.status.toUpperCase()),
               ],
             ),
+// ... lines continue ...
 
             const SizedBox(height: 12),
 
@@ -163,12 +184,12 @@ class BookingDetailScreen extends StatelessWidget {
               title: 'Schedule',
               icon: Icons.schedule,
               children: [
-                _DetailRow(label: 'Date', value: booking.meetingDate),
-                _DetailRow(label: 'Start Time', value: booking.startTime),
-                _DetailRow(label: 'End Time', value: booking.endTime),
+                _DetailRow(label: 'Date', value: widget.booking.meetingDate),
+                _DetailRow(label: 'Start Time', value: widget.booking.startTime),
+                _DetailRow(label: 'End Time', value: widget.booking.endTime),
                 _DetailRow(
                   label: 'Duration',
-                  value: _calculateDuration(booking.startTime, booking.endTime),
+                  value: _calculateDuration(widget.booking.startTime, widget.booking.endTime),
                 ),
               ],
             ),
@@ -182,53 +203,54 @@ class BookingDetailScreen extends StatelessWidget {
               children: [
                 _DetailRow(
                   label: 'Booking ID',
-                  value: booking.id.toString(),
+                  value: widget.booking.id.toString(),
                   isSmall: true,
                 ),
                 _DetailRow(
                   label: 'Created At',
-                  value: booking.createdAt.toLocal().toString().substring(0, 16),
+                  value: widget.booking.createdAt.toLocal().toString().substring(0, 16),
                 ),
               ],
             ),
 
             const SizedBox(height: 24),
 
-            // ── Bottom Action Buttons ──
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _confirmDelete(context),
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    label: const Text('Delete', style: TextStyle(color: Colors.red)),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.red),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+            // Only show bottom actions if user is the owner
+            if (_isOwner)
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _confirmDelete(context),
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      label: const Text('Delete', style: TextStyle(color: Colors.red)),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.red),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _goToEdit(context),
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Edit Booking'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _goToEdit(context),
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Edit Booking'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1565C0),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),

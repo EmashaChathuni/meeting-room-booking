@@ -24,13 +24,17 @@ func ConnectDB() {
 	var err error
 	DB, err = sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatalf("Failed to open database connection: %v", err)
+		log.Fatalf("❌ Error opening database connection pool: %v", err)
 	}
+
+	// Set connection limits (Good for Choreo/Cloud environments)
+	DB.SetMaxOpenConns(15)
+	DB.SetMaxIdleConns(5)
 
 	// Verify the connection is alive
 	if err = DB.Ping(); err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("❌ Could not reach Supabase. Check your password and IP Whitelist (0.0.0.0/0). Error: %v", err)
 	}
 
-	log.Println("✅ Connected to Supabase PostgreSQL database")
+	log.Println("✅ Successfully connected to Supabase!")
 }

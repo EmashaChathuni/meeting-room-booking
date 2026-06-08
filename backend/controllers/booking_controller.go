@@ -13,27 +13,7 @@ import (
 
 // GetAllBookings handles GET /api/bookings - requires authentication
 func GetAllBookings(c *gin.Context) {
-	// Get user_id from context (set by auth middleware)
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "Unauthorized",
-		})
-		return
-	}
-
-	// Convert userID to int
-	userIntID, err := strconv.Atoi(userID.(string))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"message": "Invalid user ID",
-		})
-		return
-	}
-
-	bookings, err := repositories.GetAllBookings(userIntID)
+	bookings, err := repositories.GetAllBookings()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -62,27 +42,7 @@ func GetBookingByID(c *gin.Context) {
 		return
 	}
 
-	// Get user_id from context
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "Unauthorized",
-		})
-		return
-	}
-
-	// Convert userID to int
-	userIntID, err := strconv.Atoi(userID.(string))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"message": "Invalid user ID",
-		})
-		return
-	}
-
-	booking, err := repositories.GetBookingByID(id, userIntID)
+	booking, err := repositories.GetBookingByID(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,

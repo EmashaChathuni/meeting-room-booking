@@ -165,6 +165,15 @@ class AuthService {
     }
   }
 
+  // Helper to get just the user ID
+  static Future<int?> getCurrentUserId() async {
+    final user = await getUser();
+    if (user != null && user['id'] != null) {
+      return user['id'] as int;
+    }
+    return null;
+  }
+
   // ─────────────────────────────────────────────────
   // Clear token and logout user
   // ─────────────────────────────────────────────────

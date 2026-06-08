@@ -59,7 +59,7 @@ services:
       max: 2
     environment:
       - name: API_BASE_URL
-        value: "https://backend-api.{choreo-domain}/api"
+        value: "https://66393585-7f58-4d9a-86f6-1fc090093011-dev.e1-eu-north-azure.choreoapis.dev/default/backend/v1.0"
 
 dependencies:
   - source: backend-api

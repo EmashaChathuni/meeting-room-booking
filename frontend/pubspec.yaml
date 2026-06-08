@@ -14,7 +14,7 @@ dependencies:
   http: ^1.2.0
   
   # Date formatting utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   
   # Loading spinner animations
   flutter_spinkit: ^5.2.1
@@ -28,7 +28,16 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icon/app_icon.png
