@@ -49,3 +49,33 @@ func RegisterRoutes(router *gin.Engine) {
 		}
 	}
 }
+
+// RegisterRoutesOnGroup registers all endpoints on a specific router group (used for Choreo compatibility)
+func RegisterRoutesOnGroup(rg *gin.RouterGroup) {
+	// Health check for the group
+	rg.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "API via Choreo Prefix is running"})
+	})
+
+	// API routes group
+	api := rg.Group("/api")
+	{
+		auth := api.Group("/auth")
+		{
+			auth.POST("/signup", controllers.Signup)
+			auth.POST("/login", controllers.Login)
+		}
+
+		api.GET("/profile", AuthMiddleware(), controllers.GetProfile)
+
+		bookings := api.Group("/bookings")
+		bookings.Use(AuthMiddleware())
+		{
+			bookings.GET("", controllers.GetAllBookings)
+			bookings.GET("/:id", controllers.GetBookingByID)
+			bookings.POST("", controllers.CreateBooking)
+			bookings.PUT("/:id", controllers.UpdateBooking)
+			bookings.DELETE("/:id", controllers.DeleteBooking)
+		}
+	}
+}
