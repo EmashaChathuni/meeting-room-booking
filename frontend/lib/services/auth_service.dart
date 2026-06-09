@@ -114,6 +114,11 @@ class AuthService {
             'message': data['message'] ?? 'Login failed',
           };
         }
+      } else if (response.statusCode == 404) {
+        return {
+          'success': false,
+          'message': 'Login service is unavailable. Please deploy the latest backend.',
+        };
       } else {
         final Map<String, dynamic> body = jsonDecode(response.body);
         return {

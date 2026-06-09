@@ -18,7 +18,6 @@ class BookingDetailScreen extends StatefulWidget {
 }
 
 class _BookingDetailScreenState extends State<BookingDetailScreen> {
-  int? _currentUserId;
   bool _isOwner = false;
 
   @override
@@ -31,7 +30,6 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     final id = await AuthService.getCurrentUserId();
     if (mounted) {
       setState(() {
-        _currentUserId = id;
         _isOwner = widget.booking.userId == id;
       });
     }
