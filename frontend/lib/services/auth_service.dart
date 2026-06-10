@@ -57,6 +57,11 @@ class AuthService {
             'message': data['message'] ?? 'Signup failed',
           };
         }
+      } else if (response.statusCode >= 500) {
+        return {
+          'success': false,
+          'message': 'Signup service is temporarily unavailable. Please try again.',
+        };
       } else {
         final Map<String, dynamic> body = jsonDecode(response.body);
         return {
@@ -119,6 +124,11 @@ class AuthService {
           'success': false,
           'message': 'Login service is unavailable. Please deploy the latest backend.',
         };
+      } else if (response.statusCode >= 500) {
+        return {
+          'success': false,
+          'message': 'Login service is temporarily unavailable. Please try again.',
+        };
       } else {
         final Map<String, dynamic> body = jsonDecode(response.body);
         return {
@@ -126,10 +136,10 @@ class AuthService {
           'message': body['message'] ?? 'Invalid email or password',
         };
       }
-    } catch (e) {
+    } catch (_) {
       return {
         'success': false,
-        'message': 'Error: ${e.toString()}',
+        'message': 'Unable to connect to the server. Please try again.',
       };
     }
   }

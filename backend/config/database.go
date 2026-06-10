@@ -3,14 +3,53 @@ package config
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"net"
+	"net/url"
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
+const (
+	directSupabaseHost = "db.ktfktivucihcyozvnfqo.supabase.co"
+	supabaseProjectRef = "ktfktivucihcyozvnfqo"
+	supabasePoolerHost = "aws-1-ap-southeast-2.pooler.supabase.com"
+)
+
 // DB is the global database connection pool
 var DB *sql.DB
+
+func normalizeDatabaseURL(rawURL string) (string, error) {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid SUPABASE_DB_URL: %w", err)
+	}
+
+	if strings.EqualFold(parsed.Hostname(), directSupabaseHost) {
+		password, hasPassword := parsed.User.Password()
+		if !hasPassword {
+			return "", fmt.Errorf("SUPABASE_DB_URL is missing a password")
+		}
+
+		port := parsed.Port()
+		if port == "" {
+			port = "5432"
+		}
+		parsed.Host = net.JoinHostPort(supabasePoolerHost, port)
+		parsed.User = url.UserPassword("postgres."+supabaseProjectRef, password)
+	}
+
+	query := parsed.Query()
+	if query.Get("connect_timeout") == "" {
+		query.Set("connect_timeout", "10")
+	}
+	parsed.RawQuery = query.Encode()
+
+	return parsed.String(), nil
+}
 
 // ConnectDB opens a connection to the Supabase PostgreSQL database
 func ConnectDB() {
@@ -21,8 +60,13 @@ func ConnectDB() {
 		return
 	}
 
+	dbURL, err := normalizeDatabaseURL(dbURL)
+	if err != nil {
+		log.Printf("Invalid database configuration: %v", err)
+		return
+	}
+
 	// Open a connection to the database
-	var err error
 	DB, err = sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Printf("Error opening database connection pool: %v", err)

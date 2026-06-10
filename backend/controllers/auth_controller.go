@@ -2,6 +2,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -40,9 +41,17 @@ func Signup(c *gin.Context) {
 	// Create user in database
 	user, err := repositories.CreateUser(req.Email, passwordHash, req.FullName, req.Department)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		if errors.Is(err, repositories.ErrEmailAlreadyRegistered) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"success": false,
+				"message": "Email already registered",
+			})
+			return
+		}
+
+		c.JSON(http.StatusServiceUnavailable, gin.H{
 			"success": false,
-			"message": err.Error(),
+			"message": "Unable to create account. Please try again.",
 		})
 		return
 	}
@@ -88,6 +97,14 @@ func Login(c *gin.Context) {
 	// Get user by email
 	user, err := repositories.GetUserByEmail(req.Email)
 	if err != nil {
+		if !errors.Is(err, repositories.ErrUserNotFound) {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"success": false,
+				"message": "Login service is temporarily unavailable. Please try again.",
+			})
+			return
+		}
+
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
 			"message": "Invalid email or password",

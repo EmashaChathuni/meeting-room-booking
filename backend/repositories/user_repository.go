@@ -3,10 +3,18 @@ package repositories
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"meeting-room-booking/config"
 	"meeting-room-booking/models"
+
+	"github.com/lib/pq"
+)
+
+var (
+	ErrEmailAlreadyRegistered = errors.New("email already registered")
+	ErrUserNotFound           = errors.New("user not found")
 )
 
 // CreateUser creates a new user in the database
@@ -24,8 +32,9 @@ func CreateUser(email, passwordHash, fullName, department string) (*models.User,
 	)
 
 	if err != nil {
-		if err.Error() == "pq: duplicate key value violates unique constraint \"users_email_key\"" {
-			return nil, fmt.Errorf("email already registered")
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return nil, ErrEmailAlreadyRegistered
 		}
 		return nil, fmt.Errorf("error creating user: %w", err)
 	}
@@ -48,7 +57,7 @@ func GetUserByEmail(email string) (*models.User, error) {
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("user not found")
+		return nil, ErrUserNotFound
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error fetching user: %w", err)
@@ -72,7 +81,7 @@ func GetUserByID(id string) (*models.User, error) {
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("user not found")
+		return nil, ErrUserNotFound
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error fetching user: %w", err)
