@@ -27,7 +27,7 @@ func normalizeTime(timeStr string) string {
 // GetAllBookings fetches all bookings from the database (Global Visibility)
 func GetAllBookings() ([]models.Booking, error) {
 	query := `
-		SELECT id, user_id, room_name, booked_by, department, meeting_title,
+		SELECT id, user_id, room_name, booked_by, COALESCE(department, ''), meeting_title,
 		       meeting_date, start_time, end_time, number_of_people, status, created_at, updated_at
 		FROM meeting_bookings
 		ORDER BY meeting_date DESC, start_time DESC
@@ -59,7 +59,7 @@ func GetAllBookings() ([]models.Booking, error) {
 // GetBookingByID fetches a single booking by its ID (Anyone can view)
 func GetBookingByID(id int) (*models.Booking, error) {
 	query := `
-		SELECT id, user_id, room_name, booked_by, department, meeting_title,
+		SELECT id, user_id, room_name, booked_by, COALESCE(department, ''), meeting_title,
 		       meeting_date, start_time, end_time, number_of_people, status, created_at, updated_at
 		FROM meeting_bookings
 		WHERE id = $1
@@ -97,7 +97,7 @@ func CreateBooking(userID int, req models.CreateBookingRequest) (*models.Booking
 		  (user_id, room_name, booked_by, department, meeting_title, meeting_date,
 		   start_time, end_time, number_of_people, status)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		RETURNING id, user_id, room_name, booked_by, department, meeting_title,
+		RETURNING id, user_id, room_name, booked_by, COALESCE(department, ''), meeting_title,
 		          meeting_date, start_time, end_time, number_of_people, status, created_at, updated_at
 	`
 
@@ -148,7 +148,7 @@ func UpdateBooking(id, userID int, req models.UpdateBookingRequest) (*models.Boo
 		    status = COALESCE(NULLIF($9, ''), status),
 		    updated_at = NOW()
 		WHERE id = $10
-		RETURNING id, user_id, room_name, booked_by, department, meeting_title,
+		RETURNING id, user_id, room_name, booked_by, COALESCE(department, ''), meeting_title,
 		          meeting_date, start_time, end_time, number_of_people, status, created_at, updated_at
 	`
 

@@ -64,10 +64,10 @@ class AuthService {
           'message': body['message'] ?? 'Signup failed. Please try again.',
         };
       }
-    } catch (e) {
+    } catch (_) {
       return {
         'success': false,
-        'message': 'Error: ${e.toString()}',
+        'message': 'Unable to connect to the server. Please try again.',
       };
     }
   }
